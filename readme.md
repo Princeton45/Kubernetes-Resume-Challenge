@@ -1,10 +1,44 @@
-# The Kubernetes Resume Challenge: My Journey to Cloud-Native Mastery
+# The Kubernetes Resume Challenge
 
-Hi, I'm [Your Name], and this is my journey through the Kubernetes Resume Challenge by KodeKloud. This project was an incredible opportunity to dive deep into the world of Kubernetes and containerization, mirroring the real-world challenges of deploying a scalable, resilient e-commerce website.
+## Project Overview
+This challenge is all about showcasing my practical Kubernetes skills by deploying a real-world scenario: an e-commerce website. It goes beyond basic deployments, pushing me to demonstrate expertise in containerization, dynamic scaling, high availability, and efficient application management using Kubernetes. 
 
-**Why This Challenge?**
+I'll be containerizing the application and its database using Docker, ensuring consistency across environments. 
 
-I chose this challenge because it directly addresses critical aspects of modern web application deployment: scalability, consistency, and availability. By utilizing Docker for containerization and Kubernetes for orchestration, I aimed to demonstrate a practical understanding of these technologies and how they solve common deployment issues.
+To manage the deployment, I'll use a managed Kubernetes service (Amazon EKS), leveraging its features for dynamic scaling, high availability, and self-healing.
+
+I'll also implement configuration management with Kubernetes ConfigMaps and Secrets, and package the whole application using Helm for easier management and versioning.
+
+Finally, to streamline the development process, I'll set up a CI/CD pipeline using GitHub Actions, automating the build and deployment workflow. 
+
+This project will be a practical showcase of my ability to design, deploy, and manage scalable applications in a Kubernetes environment.
+
+## Interaction Flow
+
+User Request: A user accesses the e-commerce website by entering the URL into their browser.
+
+DNS Resolution: The user's browser queries DNS servers to resolve the website's domain name to an IP address.
+
+Load Balancer: The resolved IP address points to a cloud-based Load Balancer (e.g., AWS Application Load Balancer, Azure Load Balancer, or GCP HTTP Load Balancing) managed by Kubernetes as a Service of type LoadBalancer.
+
+Ingress Controller (Optional): If an Ingress controller is used, it would be placed in front of the LoadBalancer service to allow for advanced traffic routing based on hostname and path. Since we are only deploying a single website, an Ingress controller is not necessary.
+
+Kubernetes Service: The Load Balancer distributes incoming traffic across a set of healthy pods running the e-commerce web application. These pods are managed by a Kubernetes Deployment. The Load Balancer is exposed to the public internet by a Kubernetes service of type LoadBalancer.
+
+Web Application Pods: Each pod contains a Docker container running the e-commerce website code (PHP application server). The code is pulled from a Docker image hosted on Docker Hub.
+
+Readiness and Liveness Probes: Kubernetes continuously monitors the health of these pods using readiness and liveness probes. If a pod fails a probe, it is removed from the Load Balancer's pool and/or restarted automatically.
+
+Horizontal Pod Autoscaler (HPA): An HPA monitors the CPU utilization of the web application pods. Based on predefined thresholds, it automatically scales the number of pods up or down to handle fluctuations in traffic.
+
+Database Pod: The e-commerce application connects to a separate pod running a MariaDB database. This pod uses the official MariaDB Docker image.
+
+Persistent Storage: The MariaDB pod utilizes a PersistentVolumeClaim (PVC) to store its data on a persistent volume. This ensures that the database data is preserved even if the database pod is rescheduled or restarted.
+
+ConfigMaps and Secrets: Application configurations (like feature toggles) are managed using ConfigMaps, while sensitive information (like database credentials) is stored securely in Secrets. These are injected into the relevant pods as environment variables or mounted files.
+
+CI/CD Pipeline (GitHub Actions): When code changes are pushed to the GitHub repository, a GitHub Actions workflow is triggered. This workflow automatically builds a new Docker image, pushes it to Docker Hub, and updates the Kubernetes Deployment to use the new image, resulting in a seamless deployment.
+
 
 **Picture Suggestion:** Include a personal headshot or a picture of you working on your computer here to personalize the README.
 
