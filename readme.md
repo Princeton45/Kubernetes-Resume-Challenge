@@ -78,27 +78,14 @@ For more information on the original challenge see: https://cloudresumechallenge
    - HPA manages pod scaling
    - Rolling updates handled via Helm
    - Rollbacks possible using Helm rollback
-**Picture Suggestion:** Include a personal headshot or a picture of you working on your computer here to personalize the README.
-
-## Prerequisites: Getting Started
-
-Before diving into the challenge, I made sure I had all the necessary tools and accounts set up:
-
-*   **Docker and Kubernetes CLI Tools:** Essential for interacting with Docker and Kubernetes.
-*   **Cloud Provider Account:** I used [AWS/Azure/GCP] for creating my Kubernetes cluster.
-*   **GitHub Account:** For version control and later setting up a CI/CD pipeline.
-*   **Kubernetes Crash Course:** A free course by KodeKloud to brush up on K8s basics.
-*   **E-commerce Application Source Code and DB Scripts:** Provided by KodeKloud, this gave me a starting point for the application and database setup.
-
-**Picture Suggestion:** A screenshot of your terminal showing `kubectl` and `docker` commands, or a diagram illustrating the interaction between these tools and your cloud provider.
 
 ## Step-by-Step Implementation
 
 ### Step 1: Certification
 
-I started by completing the Certified Kubernetes Application Developer (CKAD) course by KodeKloud. This not only prepared me for the challenge but also gave me a solid foundation in Kubernetes.
+In January 2025, I passed the CKAD Certification.
 
-**Picture Suggestion:** Your CKAD certification badge or a screenshot of your progress in the KodeKloud CKAD course.
+![Cert](https://github.com/Princeton45/Kubernetes-Resume-Challenge/blob/main/images/Cert.png)
 
 ### Step 2: Containerizing the E-Commerce Website and Database
 
