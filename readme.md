@@ -13,41 +13,47 @@ Finally, to streamline the development process, I'll set up a CI/CD pipeline usi
 
 This project will be a practical showcase of my ability to design, deploy, and manage scalable applications in a Kubernetes environment.
 
-## Interaction Flow
+## Interaction Flow with Helm
 
-### Initial Request
-User Request: A user accesses the e-commerce website via URL.
+### Infrastructure Setup
+1. **Helm Chart Structure**
+   - Create main chart for e-commerce application
+   - Define subcharts for web and database components
+   - Configure values.yaml for environment-specific settings
 
-DNS Resolution: Browser queries DNS servers to resolve domain name to IP.
+### Request Flow
+1. **User Entry**
+   - User accesses website URL
+   - DNS resolves to cloud load balancer
 
-### Traffic Management
-Load Balancer: Points to cloud-based Load Balancer managed by Kubernetes as LoadBalancer service.
+2. **Traffic Handling**
+   - Load Balancer (defined in Helm values) routes traffic
+   - Kubernetes Service distributes to web application pods
 
-Ingress Controller (Optional): Enables advanced traffic routing based on hostname/path if needed.
+3. **Application Processing**
+   - Web pods handle requests (scaled via HPA)
+   - Readiness/Liveness probes monitor health
+   - ConfigMaps/Secrets provide configuration (managed via Helm)
 
-### Application Layer
-Kubernetes Service: Distributes traffic across healthy pods running the e-commerce application.
+4. **Data Layer**
+   - MariaDB pod handles database operations
+   - PVC ensures data persistence
+   - Database credentials managed via Helm-templated secrets
 
-Web Application Pods: Contains Docker containers running PHP application server.
+### Deployment Process
+1. **Development**
+   - Code changes pushed to repository
+   - GitHub Actions triggered
 
-Health Monitoring: Uses readiness and liveness probes for continuous health checks.
+2. **CI/CD Pipeline**
+   - Builds Docker image
+   - Updates Helm chart version
+   - Deploys using Helm upgrade
 
-Scaling: HPA monitors CPU utilization for automatic pod scaling.
-
-### Data Layer
-Database: Separate pod running MariaDB database.
-
-Storage: Uses PersistentVolumeClaim (PVC) for data persistence.
-
-### Configuration
-ConfigMaps and Secrets: Manages application configurations and sensitive information.
-
-### Deployment
-CI/CD Pipeline: GitHub Actions workflow handles:
-- Docker image building
-- Container registry pushing
-- Kubernetes deployment updates
-
+3. **Scaling & Updates**
+   - HPA manages pod scaling
+   - Rolling updates handled via Helm
+   - Rollbacks possible using Helm rollback
 **Picture Suggestion:** Include a personal headshot or a picture of you working on your computer here to personalize the README.
 
 ## Prerequisites: Getting Started
