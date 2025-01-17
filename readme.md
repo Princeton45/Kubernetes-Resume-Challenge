@@ -3,15 +3,32 @@
 ## Project Overview
 This challenge is all about showcasing my practical Kubernetes skills by deploying a real-world scenario: an e-commerce website. It goes beyond basic deployments, pushing me to demonstrate expertise in containerization, dynamic scaling, high availability, and efficient application management using Kubernetes. 
 
-I'll be containerizing the application and its database using Docker, ensuring consistency across environments. 
+## Key Features
 
-To manage the deployment, I'll use a managed Kubernetes service (Amazon EKS), leveraging its features for dynamic scaling, high availability, and self-healing.
-
-I'll also implement configuration management with Kubernetes ConfigMaps and Secrets, and package the whole application using Helm for easier management and versioning.
-
-Finally, to streamline the development process, I'll set up a CI/CD pipeline using GitHub Actions, automating the build and deployment workflow. 
-
-This project will be a practical showcase of my ability to design, deploy, and manage scalable applications in a Kubernetes environment.
+*   **Containerization:**
+    *   The web application is containerized using Docker, ensuring consistency across environments.
+    *   The official MariaDB image is utilized for the database.
+*   **Kubernetes Deployment:**
+    *   Deployed on a managed Kubernetes cluster (EKS).
+    *   Utilizes Kubernetes Deployments for managing the web application pods.
+*   **Scaling:**
+    *   **Manual Scaling:** Implemented to handle anticipated traffic increases during marketing campaigns.
+    *   **Horizontal Pod Autoscaler (HPA):** Configured for automatic scaling based on CPU utilization (target 50%, min 2 pods, max 10 pods). This ensures the application remains performant under varying and unpredictable traffic loads.
+*   **High Availability:**
+    *   **Liveness and Readiness Probes:** Integrated to ensure application health and proper traffic routing. Liveness probes automatically restart unresponsive pods, while readiness probes ensure traffic is only directed to ready pods.
+    *   **Rolling Updates:** Enables zero-downtime deployments when updating the application to new versions.
+    *   **Rollbacks:** Provides a mechanism to quickly revert to a previous, stable deployment in case of issues with a new release.
+*   **Configuration Management:**
+    *   **ConfigMaps:** Used to manage non-sensitive configuration data, such as feature toggles (e.g., enabling a "dark mode" for the website).
+    *   **Secrets:** Securely store sensitive information like database credentials, preventing them from being hardcoded in the application or configuration files.
+*   **Service Exposure:**
+    *   A Kubernetes Service of type `LoadBalancer` exposes the application externally, providing a stable endpoint for users to access the e-commerce website.
+*   **Automation:**
+    *   A CI/CD pipeline is implemented using GitHub Actions. This automates the process of building the Docker image, pushing it to Docker Hub, and updating the Kubernetes deployment whenever changes are pushed to the main branch.
+*   **Helm Packaging:**
+    *   The entire application, including all Kubernetes resources, is packaged as a Helm chart. This simplifies deployment, enables easy versioning and rollback capabilities, and promotes reusability across different environments.
+*   **Persistent Storage:**
+    *   PersistentVolumeClaims (PVCs) are used to ensure data durability for the MariaDB database. This ensures that data persists across pod restarts and redeployments.
 
 For more information on the original challenge see: https://cloudresumechallenge.dev/docs/extensions/kubernetes-challenge/
 
@@ -20,7 +37,7 @@ For more information on the original challenge see: https://cloudresumechallenge
 
 ![Kubernetes Diagram](https://github.com/Princeton45/Kubernetes-Resume-Challenge/blob/main/images/Kubernetes_diagram.png)
 
-![Helm Diagram](https://github.com/Princeton45/Kubernetes-Resume-Challenge/blob/main/images/Helm.png)
+![Helm Diagram](https://github.com/Princeton45/Kubernetes-Resume-Challenge/blob/main/images/Helm.jpg)
 
 ### Infrastructure Setup
 1. **Helm Chart Structure**
