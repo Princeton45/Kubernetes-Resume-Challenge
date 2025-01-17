@@ -20,6 +20,8 @@ For more information on the original challenge see: https://cloudresumechallenge
 
 ![Kubernetes Diagram](https://github.com/Princeton45/Kubernetes-Resume-Challenge/blob/main/images/Kubernetes_diagram.png)
 
+![Helm Diagram](https://github.com/Princeton45/Kubernetes-Resume-Challenge/blob/main/images/Helm.png)
+
 ### Infrastructure Setup
 1. **Helm Chart Structure**
    - Create main chart for e-commerce application
