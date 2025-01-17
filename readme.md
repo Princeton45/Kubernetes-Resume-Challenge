@@ -18,6 +18,8 @@ For more information on the original challenge see: https://cloudresumechallenge
 
 ## Interaction Flow with Helm
 
+![Kubernetes Diagram](https://github.com/Princeton45/Kubernetes-Resume-Challenge/blob/main/images/Kubernetes_diagram.png)
+
 ### Infrastructure Setup
 1. **Helm Chart Structure**
    - Create main chart for e-commerce application
