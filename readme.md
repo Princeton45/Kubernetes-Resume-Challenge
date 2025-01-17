@@ -13,6 +13,9 @@ Finally, to streamline the development process, I'll set up a CI/CD pipeline usi
 
 This project will be a practical showcase of my ability to design, deploy, and manage scalable applications in a Kubernetes environment.
 
+For more information on the original challenge see: https://cloudresumechallenge.dev/docs/extensions/kubernetes-challenge/
+
+
 ## Interaction Flow with Helm
 
 ### Infrastructure Setup
