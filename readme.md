@@ -97,13 +97,10 @@ The `config.php` is a temporary file for the initial testing of the container bu
 
 ![web](https://github.com/Princeton45/Kubernetes-Resume-Challenge/blob/main/images/step2_a.png)
 
-After creating the `Dockerfile`, I built the image with `docker build -t [yourdockerhubusername]/ecom-web:v1 .` and pushed it to Docker Hub using `docker push [yourdockerhubusername]/ecom-web:v1`.
+After creating the `Dockerfile`, I built the image with `docker build -t prince450/ecom-web:v2 .` and pushed it to Docker Hub using `docker push prince450/ecom-web:v2`.
 
-**Picture Suggestion:** A snippet of your `Dockerfile` or a screenshot of your Docker Hub repository showing the `ecom-web` image.
+![docker_push](https://github.com/Princeton45/Kubernetes-Resume-Challenge/blob/main/images/docker_push.png)
 
-**B. Database Containerization**
-
-For the database, I used the official MariaDB image and prepared the `db-load-script.sql` for initialization through Kubernetes ConfigMaps.
 
 ### Step 3: Setting Up Kubernetes on a Public Cloud Provider
 
