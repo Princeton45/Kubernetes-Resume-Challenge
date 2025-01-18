@@ -120,7 +120,9 @@ I first needed to install and configure the [AWS CLI](https://docs.aws.amazon.co
 
 Then I needed to install [eksctl](https://eksctl.io/installation/) so that we can run commands from the CLI to EKS
 
-Lastly, I configured [kubectl](https://docs.aws.amazon.com/eks/latest/userguide/install-kubectl.html) to interact with the new cluster. 
+Next, I configured [kubectl](https://docs.aws.amazon.com/eks/latest/userguide/install-kubectl.html) to interact with the new cluster. 
+
+Lastly, I installed the  [AWS CSI Storage Add-on](https://docs.aws.amazon.com/eks/latest/userguide/managing-ebs-csi.html) because once we get to the "Implement Persistent Storage" part of this challenge, we will need the EBS CSI driver so that we can create Persistent EBS volumes for the MariaDB Database.
 
 I created the EKS cluster using the command below.
 
