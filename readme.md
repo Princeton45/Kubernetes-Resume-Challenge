@@ -114,7 +114,12 @@ The official MariaDB (and MySQL) Docker images have a special mechanism where an
 
 ### Step 3: Setting Up Kubernetes on a Public Cloud Provider
 
-I chose [AWS/Azure/GCP] and created a Kubernetes cluster using their managed Kubernetes service (EKS, AKS, or GKE). I configured `kubectl` to interact with my new cluster.
+I chose AWS and created a Kubernetes cluster using their managed Kubernetes service (EKS). 
+
+I first needed to install and configure the ![AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html).
+
+
+I configured `kubectl` to interact with my new cluster.
 
 **Picture Suggestion:** A screenshot of your cloud provider's dashboard showing your Kubernetes cluster.
 
