@@ -93,9 +93,9 @@ In January 2025, I passed the CKAD Certification.
 
 I created a `Dockerfile` for the e-commerce application, using `php:7.4-apache` as the base image and ensuring the `mysqli` extension was installed. The application codeis copied to `/var/www/html/`. 
 
-The `config.php` is a temporary file for the initial testing of the container build with the database connection strings because once the EKS Cluster is setup, we will  setup a `configmap` for the database connection string instead and mount it to the web application deployment.
+Later, we will  setup a `configmap` for the database connection string and mount it to the web application deployment once the EKS Cluster is setup.
 
-![web](https://github.com/Princeton45/Kubernetes-Resume-Challenge/blob/main/images/step2_a.png)
+![web](https://github.com/Princeton45/Kubernetes-Resume-Challenge/blob/main/images/step2_aa.png)
 
 After creating the `Dockerfile`, I built the image with `docker build -t prince450/ecom-web:v2 .` and pushed it to Docker Hub using `docker push prince450/ecom-web:v2`.
 
