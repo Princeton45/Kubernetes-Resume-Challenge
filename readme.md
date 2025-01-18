@@ -133,9 +133,67 @@ eksctl create cluster --name eks-cluster --region us-east-1 --zones=us-east-1a,u
 
 ### Step 4: Deploying the Website to Kubernetes
 
-I created a `website-deployment.yaml` file to define the deployment of my web application, referencing the Docker image I pushed earlier. This deployment managed the pods running my e-commerce application.
+First, I am creating the database pod using the `ecom-db:v1` image we created earlier.
+`mysql-pod.yaml`
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: ecom-web
+    tier: backend
+  name: ecom-db
+spec:
+  containers:
+  - image: briangaber/ecom-db:v1
+    name: ecom-db
+    ports:
+    - containerPort: 3306
+    env:
+    - name: MYSQL_USER
+      value: "ecomuser"
+    - name: MYSQL_PASSWORD
+      value: "ecompassword"
+```
 
-**Picture Suggestion:** A snippet of your `website-deployment.yaml` file or a screenshot of your terminal showing `kubectl get pods`.
+I then created a `website-deployment.yaml` file to define the deployment of my web application, referencing the Docker image I pushed earlier. This deployment managed the pods running my e-commerce application.
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: website-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      tier: frontend
+  template:
+    metadata:
+      labels:
+        app: ecom-web
+        tier: frontend
+    spec:
+      containers:
+      - image: prince450/ecom-web:v2
+        name: ecom-web
+        ports:
+        - containerPort: 80
+        env:
+        - name: DB_HOST
+          value: "mysql-service"
+        - name: DB_USER
+          value: "ecomuser"
+        - name: DB_PASSWORD
+          value: "ecompassword"
+        - name: DB_NAME
+          value: "ecomdb"
+        - name: FEATURE_DARK_MODE
+          valueFrom:
+            configMapKeyRef:
+              name: feature-toggle
+              key: FEATURE_DARK_MODE
+```
 
 ### Step 5: Exposing the Website
 
