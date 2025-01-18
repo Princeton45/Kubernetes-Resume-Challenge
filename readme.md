@@ -101,6 +101,13 @@ After creating the `Dockerfile`, I built the image with `docker build -t prince4
 
 ![docker_push](https://github.com/Princeton45/Kubernetes-Resume-Challenge/blob/main/images/docker_push.png)
 
+**A. Database Containerization**
+
+We will use the official MariaDB image in the database Dockerfile.
+
+![docker_db](https://github.com/Princeton45/Kubernetes-Resume-Challenge/blob/main/images/db_dockerfile.png)
+
+The official MariaDB (and MySQL) Docker images have a special mechanism where any .sql or .sh files placed in the `/docker-entrypoint-initdb.d/` directory will be automatically executed when the container starts up for the first time.
 
 ### Step 3: Setting Up Kubernetes on a Public Cloud Provider
 
