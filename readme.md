@@ -118,9 +118,15 @@ I chose AWS and created a Kubernetes cluster using their managed Kubernetes serv
 
 I first needed to install and configure the [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html).
 
+Then I needed to install [eksctl](https://eksctl.io/installation/) so that we can run commands from the CLI to EKS
 
-I configured `kubectl` to interact with my new cluster.
+Lastly, I configured [kubectl](https://docs.aws.amazon.com/eks/latest/userguide/install-kubectl.html) to interact with the new cluster. 
 
+I created the EKS cluster using the command below.
+
+```bash
+eksctl create cluster --name eks-cluster --region us-east-1 --zones=us-east-1a,us-east-1b --nodegroup-name node-group --node-type t2.small --nodes 2 --nodes-min 2 --nodes-max 5 --managed
+```
 **Picture Suggestion:** A screenshot of your cloud provider's dashboard showing your Kubernetes cluster.
 
 ### Step 4: Deploying the Website to Kubernetes
