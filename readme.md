@@ -116,7 +116,7 @@ The official MariaDB (and MySQL) Docker images have a special mechanism where an
 
 I chose AWS and created a Kubernetes cluster using their managed Kubernetes service (EKS). 
 
-I first needed to install and configure the ![AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html).
+I first needed to install and configure the [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html).
 
 
 I configured `kubectl` to interact with my new cluster.
