@@ -181,69 +181,75 @@ spec:
         - containerPort: 80
         env:
         - name: DB_HOST
-          value: "mysql-service"
+          value: "mariadb-service"
         - name: DB_USER
           value: "ecomuser"
         - name: DB_PASSWORD
           value: "ecompassword"
         - name: DB_NAME
           value: "ecomdb"
-        - name: FEATURE_DARK_MODE
-          valueFrom:
-            configMapKeyRef:
-              name: feature-toggle
-              key: FEATURE_DARK_MODE
 ```
 
 ### Step 5: Exposing the Website
 
 To make my website accessible, I defined a `website-service.yaml` file to create a LoadBalancer service. This exposed my deployment to the internet.
 
-**Picture Suggestion:** A diagram illustrating how the LoadBalancer service exposes your application to the internet.
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: website-service
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    tier: frontend
+  type: LoadBalancer
+```
 
-### Step 6: Implementing Configuration Management
+Now I am able to access the web application using the auto-generated AWS Elastic Load Balancer DNS name for the application.
 
-I added a feature toggle for a "dark mode" to the application and managed it using a ConfigMap named `feature-toggle-config`. This demonstrated how to manage application features dynamically.
+![app](https://github.com/Princeton45/Kubernetes-Resume-Challenge/blob/main/images/application.png)
 
-**Picture Suggestion:** A screenshot of your application in dark mode and a snippet of your ConfigMap.
-
-### Step 7: Scaling the Application
+### Step 6: Scaling the Application
 
 Anticipating increased traffic, I scaled the application using `kubectl scale deployment/ecom-web --replicas=6`. This showcased Kubernetes' ability to handle varying loads.
 
 **Picture Suggestion:** A screenshot showing the increased number of pods after scaling.
 
-### Step 8: Performing a Rolling Update
+### Step 7: Performing a Rolling Update
 
 I updated the application to include a new promotional banner and built a new Docker image (`[yourdockerhubusername]/ecom-web:v2`). I then performed a rolling update by modifying the `website-deployment.yaml` file.
 
 **Picture Suggestion:** A screenshot of the website with the new promotional banner and your terminal showing the `kubectl rollout status` command.
 
-### Step 9: Rolling Back a Deployment
+### Step 8: Rolling Back a Deployment
 
 To simulate a rollback, I used `kubectl rollout undo deployment/ecom-web` after identifying an issue with the new banner. This demonstrated how to revert to a previous deployment state quickly.
 
 **Picture Suggestion:** A screenshot of your terminal showing the `kubectl rollout undo` command.
 
-### Step 10: Autoscaling the Application
+### Step 9: Autoscaling the Application
 
 I implemented a Horizontal Pod Autoscaler (HPA) to automatically scale the application based on CPU usage, ensuring performance under unpredictable traffic.
 
 **Picture Suggestion:** A graph showing the CPU usage and the corresponding increase/decrease in the number of pods.
 
-### Step 11: Implementing Liveness and Readiness Probes
+### Step 10: Implementing Liveness and Readiness Probes
 
 I added liveness and readiness probes to the `website-deployment.yaml` file to ensure the application's health and readiness to receive traffic.
 
 **Picture Suggestion:** A snippet of your `website-deployment.yaml` file showing the liveness and readiness probe definitions.
 
-### Step 12: Utilizing ConfigMaps and Secrets
+### Step 11: Utilizing ConfigMaps and Secrets
 
 I used ConfigMaps for non-sensitive data like feature toggles and Secrets for sensitive data like database credentials, demonstrating best practices for configuration and secret management.
 
 **Picture Suggestion:** Snippets of your ConfigMap and Secret definitions.
 
-### Step 13: Documenting the Process
+### Step 12: Documenting the Process
 
 I documented each step of the process, decisions made, and challenges overcome. This README serves as a comprehensive guide to my project.
 
