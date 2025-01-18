@@ -91,7 +91,11 @@ In January 2025, I passed the CKAD Certification.
 
 **A. Web Application Containerization**
 
-I created a `Dockerfile` for the e-commerce application, using `php:7.4-apache` as the base image and ensuring the `mysqli` extension was installed. The application code was copied to `/var/www/html/`, and database connection strings were updated to point to a Kubernetes service named `mysql-service`. Port 80 was exposed for web traffic.
+I created a `Dockerfile` for the e-commerce application, using `php:7.4-apache` as the base image and ensuring the `mysqli` extension was installed. The application codeis copied to `/var/www/html/`. 
+
+The `config.php` is a temporary file for the initial testing of the container build with the database connection strings because once the EKS Cluster is setup, we will  setup a `configmap` for the database connection string instead and mount it to the web application deployment.
+
+![web](https://github.com/Princeton45/Kubernetes-Resume-Challenge/blob/main/images/step2_a.png)
 
 After creating the `Dockerfile`, I built the image with `docker build -t [yourdockerhubusername]/ecom-web:v1 .` and pushed it to Docker Hub using `docker push [yourdockerhubusername]/ecom-web:v1`.
 
