@@ -129,7 +129,7 @@ I created the EKS cluster using the command below.
 ```bash
 eksctl create cluster --name eks-cluster --region us-east-1 --zones=us-east-1a,us-east-1b --nodegroup-name node-group --node-type t2.small --nodes 2 --nodes-min 2 --nodes-max 5 --managed
 ```
-**Picture Suggestion:** A screenshot of your cloud provider's dashboard showing your Kubernetes cluster.
+![eks](https://github.com/Princeton45/Kubernetes-Resume-Challenge/blob/main/images/eks_cluster.png)
 
 ### Step 4: Deploying the Website to Kubernetes
 
