@@ -265,9 +265,39 @@ I packaged my application using Helm, creating a chart that defined all necessar
 
 ### Implementing Persistent Storage
 
-I implemented persistent storage for the MariaDB database using a PersistentVolumeClaim (PVC), ensuring data durability across pod restarts.
+I implemented persistent storage for the MariaDB database using a storage class with the provisioner set to `ebs.csi.aws.com` so that it provisions an `EBS` volume instead of a local volume on the node. 
 
-**Picture Suggestion:** A snippet of your PVC definition or a diagram showing how the database data is stored persistently.
+```yaml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: ebs-sc
+provisioner: ebs.csi.aws.com
+volumeBindingMode: WaitForFirstConsumer
+parameters:
+  type: gp3
+  encrypted: "true"
+```
+
+Then I created a PersistentVolumeClaim (PVC) that calls that storage class to create an EBS volume whenever a database pod requests the PVC.
+
+```yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mariadb-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: ebs-sc
+  resources:
+    requests:
+      storage: 5Gi
+```
+
+Below is a picture of an EBS volume created from the database pod requesting the PVC.
+
+![ebs](https://github.com/Princeton45/Kubernetes-Resume-Challenge/blob/main/images/ebs.png)
 
 ### Implementing a Basic CI/CD Pipeline
 
