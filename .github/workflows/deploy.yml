@@ -2,7 +2,9 @@ name: Build and Deploy
 on:
   push:
     paths:
-      - 'learning-app-ecommerce'
+      - 'learning-app-ecommerce/**'
+      - 'learning-app-ecommerce/**/*'
+
 
 env:
   DOCKER_REGISTRY: docker.io
