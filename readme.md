@@ -602,8 +602,7 @@ Below is a picture of an EBS volume created from the database pod requesting the
 
 ### Implementing a Basic CI/CD Pipeline
 
-LINK to the Github Actions CI/CD definition file.
-[LINK](https://github.com/Princeton45/Kubernetes-Resume-Challenge/blob/main/.github/workflows/deploy.yml)
+[LINK](https://github.com/Princeton45/Kubernetes-Resume-Challenge/blob/main/.github/workflows/deploy.yml) to the Github Actions CI/CD definition file.
 
 This pipeline automates the build, package, and deployment process for the `learning-app-ecommerce` application to an Amazon EKS cluster.
 
