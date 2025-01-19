@@ -478,7 +478,90 @@ spec:
 
 ### Packaging Everything in Helm
 
-I packaged my application using Helm, creating a chart that defined all necessary Kubernetes resources. This simplified deployment and management. I also used the KodeKloud Helm Course to help me understand the process.
+I packaged my application using Helm, creating a chart that defined all necessary Kubernetes resources. This simplified deployment and management. 
+
+Below is the definition for the `chart.yaml`, `website-deployment.yaml` & the `values.yaml `
+
+`chart.yaml`
+```yaml
+apiVersion: v2
+name: ecommerce
+description: An e-commerce application Helm chart for kubernetes
+type: application
+version: 0.1.0
+appVersion: "1.16.0"
+```
+
+`values.yaml`
+```yaml
+replicaCount: 2
+
+image:
+  repository: prince450/ecom-web
+  tag: "v3"
+  pullPolicy: IfNotPresent
+
+service:
+  type: LoadBalancer
+  port: 80
+
+configMap:
+  name: website-configmap
+
+secret:
+  name: configsecret
+
+resources:
+  requests:
+    cpu: 300m
+```
+
+`website-deployment.yaml`
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: website-deployment
+  labels:
+    app: ecom-web
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      tier: frontend
+  template:
+    metadata:
+      labels:
+        app: ecom-web
+        tier: frontend
+    spec:
+      containers:
+      - image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        name: ecom-web
+        ports:
+        - containerPort: 80
+        readinessProbe:
+          httpGet:
+            path: /index.php
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /index.php
+            port: 80
+        resources:
+          requests:
+            cpu: {{ .Values.resources.requests.cpu }}
+        envFrom:
+        - configMapRef:
+            name: {{ .Values.configMap.name }}
+        - secretRef:
+            name: {{ .Values.secret.name }}
+```
+
+I then packaged the chart into a `.tgz` file which will be stored in AWS S3 for the CI/CD portion of this project.
 
 **Picture Suggestion:** A screenshot of your Helm chart directory structure or your terminal showing `helm` commands.
 
