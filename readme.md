@@ -215,25 +215,73 @@ Now I am able to access the web application using the auto-generated AWS Elastic
 
 ### Step 6: Scaling the Application
 
-Anticipating increased traffic, I scaled the application using `kubectl scale deployment/ecom-web --replicas=6`. This showcased Kubernetes' ability to handle varying loads.
+Anticipating increased traffic, I scaled the application using `kubectl scale deployment/website-deployment --replicas=6`. This showcased Kubernetes' ability to handle varying loads.
 
-**Picture Suggestion:** A screenshot showing the increased number of pods after scaling.
+![manual_scale](https://github.com/Princeton45/Kubernetes-Resume-Challenge/blob/main/images/manual_scale.png)
 
 ### Step 7: Performing a Rolling Update
 
-I updated the application to include a new promotional banner and built a new Docker image (`[yourdockerhubusername]/ecom-web:v2`). I then performed a rolling update by modifying the `website-deployment.yaml` file.
+I updated the application to include a new promotional banner and built a new Docker image (`prince450/ecom-web:v3`). I then performed a rolling update by modifying the `website-deployment.yaml` file.
 
-**Picture Suggestion:** A screenshot of the website with the new promotional banner and your terminal showing the `kubectl rollout status` command.
+![rollout_status](https://github.com/Princeton45/Kubernetes-Resume-Challenge/blob/main/images/rollout_status.png)
+
+![new_banner](https://github.com/Princeton45/Kubernetes-Resume-Challenge/blob/main/images/new_banner.png)
 
 ### Step 8: Rolling Back a Deployment
 
-To simulate a rollback, I used `kubectl rollout undo deployment/ecom-web` after identifying an issue with the new banner. This demonstrated how to revert to a previous deployment state quickly.
+To simulate a rollback, I used `kubectl rollout undo deployment/website-deployment` after identifying an issue with the new banner. This demonstrated how to revert to a previous deployment state quickly.
 
-**Picture Suggestion:** A screenshot of your terminal showing the `kubectl rollout undo` command.
-
+![rollback](https://github.com/Princeton45/Kubernetes-Resume-Challenge/blob/main/images/rollback.png)
 ### Step 9: Autoscaling the Application
 
 I implemented a Horizontal Pod Autoscaler (HPA) to automatically scale the application based on CPU usage, ensuring performance under unpredictable traffic.
+
+I created a Horizontal Pod Autoscaler targeting 50% CPU utilization, with a minimum of 2 and a maximum of 10 pods.
+```yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  namespace: default
+  name: ecom-hpa
+  labels:
+    app: ecom-web-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: website-deployment
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50
+```
+
+After applying that defintion to the cluster, I was now getting a `cpu: <unknown>/50%` for the target.
+
+![hpa_error](https://github.com/Princeton45/Kubernetes-Resume-Challenge/blob/main/images/hpa_error.png)
+
+Upon further research, I needed to edit the `website-deployment` and add a resource request for the CPU to fix the issue.
+
+```yaml
+ spec:
+      containers:
+      - image: prince450/ecom-web:v3
+        name: ecom-web
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            cpu: "300m"
+```
+
+Now we can see that it is fixed.
+
+![hpa_fixed](https://github.com/Princeton45/Kubernetes-Resume-Challenge/blob/main/images/fixed_hpa.png)
 
 **Picture Suggestion:** A graph showing the CPU usage and the corresponding increase/decrease in the number of pods.
 

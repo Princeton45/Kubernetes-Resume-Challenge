@@ -14,10 +14,13 @@ spec:
         tier: frontend
     spec:
       containers:
-      - image: prince450/ecom-web:v2
+      - image: prince450/ecom-web:v3
         name: ecom-web
         ports:
         - containerPort: 80
+        resources:
+          requests:
+            cpu: "300m"
         env:
         - name: DB_HOST
           value: "mariadb-service"
