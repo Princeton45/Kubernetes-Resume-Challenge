@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: website-service
+spec:
+  ports:
+  - port: {{ .Values.service.port }}
+    protocol: TCP
+    targetPort: {{ .Values.service.port }}
+  selector:
+    tier: frontend
+  type: {{ .Values.service.type }}
+

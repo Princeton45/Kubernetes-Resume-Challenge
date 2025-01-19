@@ -580,7 +580,6 @@ parameters:
   type: gp3
   encrypted: "true"
 ```
-
 Then I created a PersistentVolumeClaim (PVC) that calls that storage class to create an EBS volume whenever a database pod requests the PVC.
 
 ```yaml

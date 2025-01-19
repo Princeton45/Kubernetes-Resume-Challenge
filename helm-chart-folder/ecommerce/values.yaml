@@ -1,0 +1,20 @@
+replicaCount: 2
+
+image:
+  repository: prince450/ecom-web
+  tag: "v3"
+  pullPolicy: IfNotPresent
+
+service:
+  type: LoadBalancer
+  port: 80
+
+configMap:
+  name: website-configmap
+
+secret:
+  name: configsecret
+
+resources:
+  requests:
+    cpu: 300m

@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: mysql
+    labels:
+      app: ecom-web
+      tier: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+     app: ecom-web
+     tier: backend
+  template:
+    metadata:
+      labels:
+        app: ecom-web
+        tier: backend
+    spec:
+      containers:
+      - image: prince450/ecom-db:v1
+        name: ecom-db
+        ports:
+        - containerPort: 3306
+        readinessProbe:
+          tcpSocket:
+            port: 3306
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        livenessProbe:
+          tcpSocket:
+            port: 3306
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        env:
+        - name: MARIADB_ROOT_PASSWORD
+          value: "rootpassword"
+        - name: MARIADB_DATABASE
+          value: "ecomdb"
+        - name: MARIADB_USER
+          value: "ecomuser"
+        - name: MARIADB_PASSWORD
+          value: "ecompassword"
+        volumeMounts:
+        - name: mariadb-persistent-storage
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: mariadb-persistent-storage
+        persistentVolumeClaim:
+          claimName: mariadb-pvc
+          
