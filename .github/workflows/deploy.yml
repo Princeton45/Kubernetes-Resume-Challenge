@@ -115,9 +115,23 @@ jobs:
         CHART_FILE=$(ls *.tgz)
         aws s3 cp "$CHART_FILE" s3://${{ env.S3_BUCKET }}/
         
-        # Initialize or update Helm S3 repository
-        helm s3 init s3://${{ env.S3_BUCKET }}/charts
+        # Check if charts directory exists
+        if ! aws s3 ls s3://${{ env.S3_BUCKET }}/charts/ > /dev/null 2>&1; then
+          # Initialize S3 repository if charts directory doesn't exist
+          helm s3 init --force s3://${{ env.S3_BUCKET }}/charts
+        fi
+        
+        # Download existing index.yaml or create a new one
+        aws s3 cp s3://${{ env.S3_BUCKET }}/charts/index.yaml ./index.yaml || touch index.yaml
+        
+        # Update the index
+        helm repo index . --url s3://${{ env.S3_BUCKET }}/charts
+        
+        # Push the chart to S3
         helm s3 push "$CHART_FILE" s3://${{ env.S3_BUCKET }}/charts
+        
+        # Upload updated index.yaml
+        aws s3 cp index.yaml s3://${{ env.S3_BUCKET }}/charts/index.yaml
 
     - name: Deploy to Kubernetes
       run: |
