@@ -31,13 +31,9 @@ spec:
         resources:
           requests:
             cpu: "300m"
-        env:
-        - name: DB_HOST
-          value: "mariadb-service"
-        - name: DB_USER
-          value: "ecomuser"
-        - name: DB_PASSWORD
-          value: "ecompassword"
-        - name: DB_NAME
-          value: "ecomdb"
+        envFrom:
+        - configMapRef:
+            name: website-configmap
+        - secretRef:
+            name: configsecret
 

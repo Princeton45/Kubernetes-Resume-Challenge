@@ -403,13 +403,76 @@ spec:
         persistentVolumeClaim:
           claimName: mariadb-pvc
 ```
-**Picture Suggestion:** A snippet of your `website-deployment.yaml` file showing the liveness and readiness probe definitions.
 
 ### Step 11: Utilizing ConfigMaps and Secrets
 
-I used ConfigMaps for non-sensitive data like feature toggles and Secrets for sensitive data like database credentials, demonstrating best practices for configuration and secret management.
+I used ConfigMaps for non-sensitive data like database name, host, user and Secrets for sensitive data like database password, demonstrating best practices for configuration and secret management.
 
-**Picture Suggestion:** Snippets of your ConfigMap and Secret definitions.
+`configmap.yaml`
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: website-configmap
+data:
+  DB_NAME: "ecomdb"
+  DB_HOST: "mariadb-service"
+  DB_USER: "ecomuser"
+```
+
+`configsecret.yaml`
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: configsecret
+  creationTimestamp: null
+data:
+  DB_PASSWORD: ZWNvbXBhc3N3b3Jk
+```
+
+The final `website-deployment.yaml` file referencing the config map and secret
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: website-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      tier: frontend
+  template:
+    metadata:
+      labels:
+        app: ecom-web
+        tier: frontend
+    spec:
+      containers:
+      - image: prince450/ecom-web:v3
+        name: ecom-web
+        ports:
+        - containerPort: 80
+        readinessProbe:
+          httpGet:
+            path: /index.php
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /index.php
+            port: 80
+        resources:
+          requests:
+            cpu: "300m"
+        envFrom:
+        - configMapRef:
+            name: website-configmap
+        - secretRef:
+            name: configsecret
+```
 
 ## Extra Credit
 
