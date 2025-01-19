@@ -283,6 +283,19 @@ Now we can see that it is fixed.
 
 ![hpa_fixed](https://github.com/Princeton45/Kubernetes-Resume-Challenge/blob/main/images/fixed_hpa.png)
 
+### Load Testing
+
+We will now simulate the website-deployment pods being scaled by using a tool called  [kubectl load generator](https://docs.aws.amazon.com/eks/latest/userguide/horizontal-pod-autoscaler.html) that runs simulated requests on kubernetes endpoints with a single command
+```bash
+kubectl run -i --tty load-generator --rm --image=busybox --restart=Never -- /bin/sh -c "while sleep 0.01; do wget -q -O- http://website-service; done"
+```
+*   `-i --tty`: Allocates an interactive terminal for the command to run.
+*   `load-generator`: Name of the pod.
+*   `--rm`: Removes the pod after it terminates.
+*   `--image=busybox`: Specifies the Docker image to use for the pod.
+*   `--restart=Never`: Indicates that the pod should not be restarted automatically if it fails.
+*   `/bin/sh -c "while sleep 0.01; do wget -q -O- http://website-service; done"`: The command to run inside the pod, which continuously sends HTTP requests to the specified endpoint (http://website-service) with a delay of 0.01 seconds between requests.
+
 **Picture Suggestion:** A graph showing the CPU usage and the corresponding increase/decrease in the number of pods.
 
 ### Step 10: Implementing Liveness and Readiness Probes
