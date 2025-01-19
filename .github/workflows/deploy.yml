@@ -10,6 +10,7 @@ env:
   DOCKER_IMAGE: prince450/ecom-web
   HELM_CHART_NAME: ecommerce
   HELM_CHART_VERSION: 0.1.0
+  HELM_CHART_PATH: helm-chart-folder/ecommerce
 
 jobs:
   build-and-deploy:
@@ -20,13 +21,17 @@ jobs:
         fetch-depth: 0
         token: ${{ secrets.GITHUB_TOKEN }}
 
+    - name: Install yq
+      run: |
+        wget https://github.com/mikefarah/yq/releases/download/v4.35.1/yq_linux_amd64 -O /usr/local/bin/yq
+        chmod +x /usr/local/bin/yq
+
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v1
 
     - name: Generate incremental version
       id: version
       run: |
-        # Read current version from file
         if [ -f version.txt ]; then
           CURRENT_VERSION=$(cat version.txt)
         else
@@ -53,8 +58,8 @@ jobs:
     - name: Build and push Docker image
       uses: docker/build-push-action@v2
       with:
-        context: ./learning-app-ecommerce 
-        file: ./learning-app-ecommerce/Dockerfile 
+        context: ./learning-app-ecommerce
+        file: ./learning-app-ecommerce/Dockerfile
         push: true
         tags: |
           ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE }}:${{ steps.version.outputs.VERSION }}
@@ -66,16 +71,26 @@ jobs:
         version: 'v3.8.0'
 
     - name: Update Helm chart values
-      working-directory: ./learning-app-ecommerce 
+      working-directory: ${{ env.HELM_CHART_PATH }}
       run: |
+        # Verify values.yaml exists
+        if [ ! -f values.yaml ]; then
+          echo "Error: values.yaml not found in ${{ env.HELM_CHART_PATH }}"
+          exit 1
+        fi
+        
         # Update the image tag in values.yaml
-        sed -i "s|tag:.*|tag: \"${{ steps.version.outputs.VERSION }}\"|g" ./values.yaml
+        yq e '.image.tag = "${{ steps.version.outputs.VERSION }}"' -i values.yaml
+        
+        # Verify the change
+        cat values.yaml
 
     - name: Package Helm chart
-      working-directory: ./learning-app-ecommerce
+      working-directory: ${{ env.HELM_CHART_PATH }}
       run: |
         helm package .
-        
+        ls *.tgz  # List packaged charts to verify
+
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
@@ -84,14 +99,15 @@ jobs:
         aws-region: us-east-1
 
     - name: Upload Helm chart to S3
-      working-directory: ./learning-app-ecommerce
+      working-directory: ${{ env.HELM_CHART_PATH }}
       run: |
-        aws s3 cp ${HELM_CHART_NAME}-${HELM_CHART_VERSION}.tgz s3://helm-bucket557/
+        CHART_FILE=$(ls *.tgz)
+        aws s3 cp "$CHART_FILE" s3://helm-bucket557/
         helm repo index .
         aws s3 cp index.yaml s3://helm-bucket557
 
     - name: Deploy to Kubernetes
-      working-directory: ./learning-app-ecommerce 
+      working-directory: ${{ env.HELM_CHART_PATH }}
       run: |
         aws eks get-token --cluster-name eks-cluster > /dev/null
         helm repo add myapp s3://helm-bucket557
@@ -99,5 +115,3 @@ jobs:
         helm upgrade --install ${HELM_CHART_NAME} myapp/${HELM_CHART_NAME} \
           --set image.tag=${{ steps.version.outputs.VERSION }} \
           --namespace default
-          
-        
