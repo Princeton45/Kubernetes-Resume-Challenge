@@ -602,14 +602,22 @@ Below is a picture of an EBS volume created from the database pod requesting the
 
 ### Implementing a Basic CI/CD Pipeline
 
-I set up a basic CI/CD pipeline using GitHub Actions to automate the build and deployment process, showcasing an efficient development workflow.
+LINK to the Github Actions CI/CD definition file.
+[LINK](https://github.com/Princeton45/Kubernetes-Resume-Challenge/blob/main/.github/workflows/deploy.yml)
 
-**Picture Suggestion:** A screenshot of your GitHub Actions workflow or a diagram illustrating your CI/CD pipeline.
+This pipeline automates the build, package, and deployment process for the `learning-app-ecommerce` application to an Amazon EKS cluster.
 
-## Conclusion
+**1. Trigger:**
 
-This Kubernetes Resume Challenge was a comprehensive learning experience that significantly enhanced my understanding of Kubernetes and containerization. It not only tested my technical skills but also pushed me to think critically about deployment strategies, scalability, and resilience. I'm excited to apply these skills in future projects and continue my journey in the world of cloud-native technologies.
+*   Activated on every `push` to the `learning-app-ecommerce` directory or its subdirectories.
 
-**Picture Suggestion:** A final picture of you smiling, perhaps with a Kubernetes logo or your completed project dashboard in the background, to signify the successful completion of the challenge.
+**2. Core Functionality:**
 
-Thank you for reading about my journey! I hope this inspires you to take on the challenge yourself and deepen your understanding of Kubernetes.
+*   **Installs Tools:** Sets up `yq` (YAML processor), `AWS CLI`, `Helm`, and the `Helm S3 Plugin`.
+*   **Authenticates with AWS:** Uses stored AWS credentials to access EKS and S3.
+*   **Generates Version:** Creates a new, incremental version number for each build.
+*   **Builds & Pushes Docker Image:** Builds a Docker image from `./learning-app-ecommerce/Dockerfile`, tags it with the new version and `latest`, and pushes it to Docker Hub.
+*   **Packages & Uploads Helm Chart:** Updates the Helm chart with the new version and image tag, packages it, and uploads it to an S3 bucket used as a Helm repository.
+*   **Deploys to EKS:** Connects `kubectl` to the EKS cluster and deploys the Helm chart from S3 to the specified namespace (default: `default`).
+
+
