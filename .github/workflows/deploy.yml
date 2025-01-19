@@ -9,7 +9,6 @@ env:
   DOCKER_REGISTRY: docker.io
   DOCKER_IMAGE: prince450/ecom-web
   HELM_CHART_NAME: ecommerce
-  HELM_CHART_VERSION: 0.1.0
   HELM_CHART_PATH: helm-chart-folder/ecommerce
   S3_BUCKET: helm-bucket557
 
@@ -81,7 +80,7 @@ jobs:
             ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE }}:${{ steps.version.outputs.VERSION }}
             ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE }}:latest
 
-      - name: Update Helm chart values
+      - name: Update Helm chart values and version
         working-directory: ${{ env.HELM_CHART_PATH }}
         run: |
           # Verify values.yaml exists
@@ -93,8 +92,12 @@ jobs:
           # Update the image tag in values.yaml
           yq e '.image.tag = "${{ steps.version.outputs.VERSION }}"' -i values.yaml
           
+          # Update chart version in Chart.yaml
+          yq e '.version = "${{ steps.version.outputs.VERSION }}"' -i Chart.yaml
+          
           # Verify the change
           cat values.yaml
+          cat Chart.yaml
 
       - name: Package Helm chart
         working-directory: ${{ env.HELM_CHART_PATH }}
@@ -132,7 +135,7 @@ jobs:
         run: |
           # Configure kubectl for EKS
           aws eks update-kubeconfig --name eks-cluster
-          
+
           # Add Helm S3 repository
           helm repo add ${{ env.S3_BUCKET }} s3://${{ env.S3_BUCKET }}/charts
           helm repo update
