@@ -11,6 +11,7 @@ env:
   HELM_CHART_NAME: ecommerce
   HELM_CHART_PATH: helm-chart-folder/ecommerce
   S3_BUCKET: helm-bucket557
+  NAMESPACE: default  # Use the default namespace for simplicity
 
 jobs:
   build-and-deploy:
@@ -18,13 +19,19 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          fetch-depth: 0
+          fetch-depth: 0 # Fetch all history for versioning
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install yq
+      - name: Install prerequisite tools
         run: |
+          # Install yq for YAML manipulation
           wget https://github.com/mikefarah/yq/releases/download/v4.35.1/yq_linux_amd64 -O /usr/local/bin/yq
           chmod +x /usr/local/bin/yq
+          
+          # Install AWS CLI
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          sudo ./aws/install --update
 
       - name: Set up Helm
         uses: azure/setup-helm@v1
@@ -35,23 +42,21 @@ jobs:
         run: |
           helm plugin install https://github.com/hypnoglow/helm-s3.git
 
-      - name: Install AWS CLI
-        run: |
-          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-          unzip awscliv2.zip
-          sudo ./aws/install --update
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-
-      - name: Generate incremental version
+      - name: Generate version and update resources
         id: version
         run: |
+          # Generate incremental version
           if [ -f version.txt ]; then
             CURRENT_VERSION=$(cat version.txt)
           else
             CURRENT_VERSION=3
-            echo $CURRENT_VERSION > version.txt
           fi
           
           NEW_VERSION=$((CURRENT_VERSION + 1))
@@ -63,6 +68,11 @@ jobs:
           git add version.txt
           git commit -m "Bump version to v${NEW_VERSION}"
           git push
+
+          # Update Helm chart values and version
+          cd ${{ env.HELM_CHART_PATH }}
+          yq e ".image.tag = \"${{ steps.version.outputs.VERSION }}\"" -i values.yaml
+          yq e ".version = \"${{ steps.version.outputs.VERSION }}\"" -i Chart.yaml
 
       - name: Login to Docker Hub
         uses: docker/login-action@v1
@@ -80,67 +90,29 @@ jobs:
             ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE }}:${{ steps.version.outputs.VERSION }}
             ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE }}:latest
 
-      - name: Update Helm chart values and version
+      - name: Package and upload Helm chart
         working-directory: ${{ env.HELM_CHART_PATH }}
         run: |
-          # Verify values.yaml exists
-          if [ ! -f values.yaml ]; then
-            echo "Error: values.yaml not found in ${{ env.HELM_CHART_PATH }}"
-            exit 1
-          fi
-          
-          # Update the image tag in values.yaml
-          yq e '.image.tag = "${{ steps.version.outputs.VERSION }}"' -i values.yaml
-          
-          # Update chart version in Chart.yaml
-          yq e '.version = "${{ steps.version.outputs.VERSION }}"' -i Chart.yaml
-          
-          # Verify the change
-          cat values.yaml
-          cat Chart.yaml
-
-      - name: Package Helm chart
-        working-directory: ${{ env.HELM_CHART_PATH }}
-        run: |
+          # Package Helm chart
           helm package .
-          ls *.tgz  # List packaged charts to verify
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+          # Initialize S3 as Helm repo (if needed)
+          aws s3 ls s3://${{ env.S3_BUCKET }}/charts/ || helm s3 init s3://${{ env.S3_BUCKET }}/charts
 
-      - name: Upload Helm chart to S3
-        working-directory: ${{ env.HELM_CHART_PATH }}
-        run: |
-          CHART_FILE=$(ls *.tgz)
-          aws s3 cp "$CHART_FILE" s3://${{ env.S3_BUCKET }}/
-
-          # Check if charts directory exists
-          if ! aws s3 ls s3://${{ env.S3_BUCKET }}/charts/ > /dev/null 2>&1; then
-            # Initialize S3 repository if charts directory doesn't exist
-            helm s3 init s3://${{ env.S3_BUCKET }}/charts
-          fi
-
-          # Add the S3 repository to Helm (this creates/updates repositories.yaml)
+          # Add S3 Helm repo
           helm repo add --force-update ${{ env.S3_BUCKET }} s3://${{ env.S3_BUCKET }}/charts
           helm repo update
 
-          # Push the chart to S3
-          helm s3 push "$CHART_FILE" ${{ env.S3_BUCKET }}
+          # Push Helm chart to S3
+          helm s3 push *.tgz ${{ env.S3_BUCKET }}
 
       - name: Deploy to Kubernetes
         run: |
           # Configure kubectl for EKS
           aws eks update-kubeconfig --name eks-cluster
 
-          # Add Helm S3 repository
-          helm repo add ${{ env.S3_BUCKET }} s3://${{ env.S3_BUCKET }}/charts
-          helm repo update
-
-          # Deploy the chart
+          # Deploy the chart using Helm
           helm upgrade --install ${{ env.HELM_CHART_NAME }} ${{ env.S3_BUCKET }}/${{ env.HELM_CHART_NAME }} \
             --set image.tag=${{ steps.version.outputs.VERSION }} \
-            --namespace default
+            --namespace ${{ env.NAMESPACE }}
+            
