@@ -130,13 +130,13 @@ jobs:
 
       - name: Deploy to Kubernetes
         run: |
-          # Configure kubectl
-          aws eks get-token --cluster-name eks-cluster | kubectl apply -f -
+          # Configure kubectl for EKS
+          aws eks update-kubeconfig --name eks-cluster
           
           # Add Helm S3 repository
           helm repo add ${{ env.S3_BUCKET }} s3://${{ env.S3_BUCKET }}/charts
           helm repo update
-          
+
           # Deploy the chart
           helm upgrade --install ${{ env.HELM_CHART_NAME }} ${{ env.S3_BUCKET }}/${{ env.HELM_CHART_NAME }} \
             --set image.tag=${{ steps.version.outputs.VERSION }} \
