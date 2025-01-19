@@ -296,12 +296,113 @@ kubectl run -i --tty load-generator --rm --image=busybox --restart=Never -- /bin
 *   `--restart=Never`: Indicates that the pod should not be restarted automatically if it fails.
 *   `/bin/sh -c "while sleep 0.01; do wget -q -O- http://website-service; done"`: The command to run inside the pod, which continuously sends HTTP requests to the specified endpoint (http://website-service) with a delay of 0.01 seconds between requests.
 
-**Picture Suggestion:** A graph showing the CPU usage and the corresponding increase/decrease in the number of pods.
+As you can see now in the image below, the cpu % is slowly rising
+
+![cpu_rising](https://github.com/Princeton45/Kubernetes-Resume-Challenge/blob/main/images/cpu_rising.png)
 
 ### Step 10: Implementing Liveness and Readiness Probes
 
-I added liveness and readiness probes to the `website-deployment.yaml` file to ensure the application's health and readiness to receive traffic.
+I added liveness and readiness probes to the `website-deployment.yaml` and `mariadb_deployment.yaml` file to ensure the application's health and readiness to receive traffic.
 
+`website-deployment.yaml`
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: website-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      tier: frontend
+  template:
+    metadata:
+      labels:
+        app: ecom-web
+        tier: frontend
+    spec:
+      containers:
+      - image: prince450/ecom-web:v3
+        name: ecom-web
+        ports:
+        - containerPort: 80
+        readinessProbe:
+          httpGet:
+            path: /index.php
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /index.php
+            port: 80
+        resources:
+          requests:
+            cpu: "300m"
+        env:
+        - name: DB_HOST
+          value: "mariadb-service"
+        - name: DB_USER
+          value: "ecomuser"
+        - name: DB_PASSWORD
+          value: "ecompassword"
+        - name: DB_NAME
+          value: "ecomdb"
+```
+
+`mariadb_deployment.yaml`
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: mysql
+    labels:
+      app: ecom-web
+      tier: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+     app: ecom-web
+     tier: backend
+  template:
+    metadata:
+      labels:
+        app: ecom-web
+        tier: backend
+    spec:
+      containers:
+      - image: prince450/ecom-db:v1
+        name: ecom-db
+        ports:
+        - containerPort: 3306
+        readinessProbe:
+          tcpSocket:
+            port: 3306
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        livenessProbe:
+          tcpSocket:
+            port: 3306
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        env:
+        - name: MARIADB_ROOT_PASSWORD
+          value: "rootpassword"
+        - name: MARIADB_DATABASE
+          value: "ecomdb"
+        - name: MARIADB_USER
+          value: "ecomuser"
+        - name: MARIADB_PASSWORD
+          value: "ecompassword"
+        volumeMounts:
+        - name: mariadb-persistent-storage
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: mariadb-persistent-storage
+        persistentVolumeClaim:
+          claimName: mariadb-pvc
+```
 **Picture Suggestion:** A snippet of your `website-deployment.yaml` file showing the liveness and readiness probe definitions.
 
 ### Step 11: Utilizing ConfigMaps and Secrets
@@ -309,12 +410,6 @@ I added liveness and readiness probes to the `website-deployment.yaml` file to e
 I used ConfigMaps for non-sensitive data like feature toggles and Secrets for sensitive data like database credentials, demonstrating best practices for configuration and secret management.
 
 **Picture Suggestion:** Snippets of your ConfigMap and Secret definitions.
-
-### Step 12: Documenting the Process
-
-I documented each step of the process, decisions made, and challenges overcome. This README serves as a comprehensive guide to my project.
-
-**Picture Suggestion:** A picture of a notebook or a digital document where you planned and documented your process.
 
 ## Extra Credit
 

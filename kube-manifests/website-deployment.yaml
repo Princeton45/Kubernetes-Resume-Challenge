@@ -18,6 +18,16 @@ spec:
         name: ecom-web
         ports:
         - containerPort: 80
+        readinessProbe:
+          httpGet:
+            path: /index.php
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /index.php
+            port: 80
         resources:
           requests:
             cpu: "300m"
