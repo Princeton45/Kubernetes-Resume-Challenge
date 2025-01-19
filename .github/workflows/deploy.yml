@@ -17,130 +17,127 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-        token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Install yq
-      run: |
-        wget https://github.com/mikefarah/yq/releases/download/v4.35.1/yq_linux_amd64 -O /usr/local/bin/yq
-        chmod +x /usr/local/bin/yq
+      - name: Install yq
+        run: |
+          wget https://github.com/mikefarah/yq/releases/download/v4.35.1/yq_linux_amd64 -O /usr/local/bin/yq
+          chmod +x /usr/local/bin/yq
 
-    - name: Set up Helm
-      uses: azure/setup-helm@v1
-      with:
-        version: 'v3.8.0'
+      - name: Set up Helm
+        uses: azure/setup-helm@v1
+        with:
+          version: 'v3.8.0'
 
-    - name: Install Helm S3 Plugin
-      run: |
-        helm plugin install https://github.com/hypnoglow/helm-s3.git
+      - name: Install Helm S3 Plugin
+        run: |
+          helm plugin install https://github.com/hypnoglow/helm-s3.git
 
-    - name: Install AWS CLI
-      run: |
-        curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-        unzip awscliv2.zip
-        sudo ./aws/install --update
+      - name: Install AWS CLI
+        run: |
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          sudo ./aws/install --update
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
 
-    - name: Generate incremental version
-      id: version
-      run: |
-        if [ -f version.txt ]; then
-          CURRENT_VERSION=$(cat version.txt)
-        else
-          CURRENT_VERSION=3
-          echo $CURRENT_VERSION > version.txt
-        fi
-        
-        NEW_VERSION=$((CURRENT_VERSION + 1))
-        echo $NEW_VERSION > version.txt
-        echo "VERSION=v${NEW_VERSION}" >> $GITHUB_OUTPUT
-        
-        git config --global user.email "github-actions@github.com"
-        git config --global user.name "GitHub Actions"
-        git add version.txt
-        git commit -m "Bump version to v${NEW_VERSION}"
-        git push
+      - name: Generate incremental version
+        id: version
+        run: |
+          if [ -f version.txt ]; then
+            CURRENT_VERSION=$(cat version.txt)
+          else
+            CURRENT_VERSION=3
+            echo $CURRENT_VERSION > version.txt
+          fi
+          
+          NEW_VERSION=$((CURRENT_VERSION + 1))
+          echo $NEW_VERSION > version.txt
+          echo "VERSION=v${NEW_VERSION}" >> $GITHUB_OUTPUT
+          
+          git config --global user.email "github-actions@github.com"
+          git config --global user.name "GitHub Actions"
+          git add version.txt
+          git commit -m "Bump version to v${NEW_VERSION}"
+          git push
 
-    - name: Login to Docker Hub
-      uses: docker/login-action@v1
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Build and push Docker image
-      uses: docker/build-push-action@v2
-      with:
-        context: ./learning-app-ecommerce
-        file: ./learning-app-ecommerce/Dockerfile
-        push: true
-        tags: |
-          ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE }}:${{ steps.version.outputs.VERSION }}
-          ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE }}:latest
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: ./learning-app-ecommerce
+          file: ./learning-app-ecommerce/Dockerfile
+          push: true
+          tags: |
+            ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE }}:${{ steps.version.outputs.VERSION }}
+            ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE }}:latest
 
-    - name: Update Helm chart values
-      working-directory: ${{ env.HELM_CHART_PATH }}
-      run: |
-        # Verify values.yaml exists
-        if [ ! -f values.yaml ]; then
-          echo "Error: values.yaml not found in ${{ env.HELM_CHART_PATH }}"
-          exit 1
-        fi
-        
-        # Update the image tag in values.yaml
-        yq e '.image.tag = "${{ steps.version.outputs.VERSION }}"' -i values.yaml
-        
-        # Verify the change
-        cat values.yaml
+      - name: Update Helm chart values
+        working-directory: ${{ env.HELM_CHART_PATH }}
+        run: |
+          # Verify values.yaml exists
+          if [ ! -f values.yaml ]; then
+            echo "Error: values.yaml not found in ${{ env.HELM_CHART_PATH }}"
+            exit 1
+          fi
+          
+          # Update the image tag in values.yaml
+          yq e '.image.tag = "${{ steps.version.outputs.VERSION }}"' -i values.yaml
+          
+          # Verify the change
+          cat values.yaml
 
-    - name: Package Helm chart
-      working-directory: ${{ env.HELM_CHART_PATH }}
-      run: |
-        helm package .
-        ls *.tgz  # List packaged charts to verify
+      - name: Package Helm chart
+        working-directory: ${{ env.HELM_CHART_PATH }}
+        run: |
+          helm package .
+          ls *.tgz  # List packaged charts to verify
 
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-1
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
 
-    - name: Upload Helm chart to S3
-      working-directory: ${{ env.HELM_CHART_PATH }}
-      run: |
-        CHART_FILE=$(ls *.tgz)
-        aws s3 cp "$CHART_FILE" s3://${{ env.S3_BUCKET }}/
+      - name: Upload Helm chart to S3
+        working-directory: ${{ env.HELM_CHART_PATH }}
+        run: |
+          CHART_FILE=$(ls *.tgz)
+          aws s3 cp "$CHART_FILE" s3://${{ env.S3_BUCKET }}/
 
-        # Check if charts directory exists
-        if ! aws s3 ls s3://${{ env.S3_BUCKET }}/charts/ > /dev/null 2>&1; then
-          # Initialize S3 repository if charts directory doesn't exist
-          helm s3 init s3://${{ env.S3_BUCKET }}/charts
-        else
-          # If charts directory exists, add the repo to ensure Helm is aware of it
-          helm repo add --force-update s3-charts s3://${{ env.S3_BUCKET }}/charts
-        fi
+          # Check if charts directory exists
+          if ! aws s3 ls s3://${{ env.S3_BUCKET }}/charts/ > /dev/null 2>&1; then
+            # Initialize S3 repository if charts directory doesn't exist
+            helm s3 init s3://${{ env.S3_BUCKET }}/charts
+          fi
 
-        # Add the S3 repository to Helm (this creates/updates repositories.yaml)
-        helm repo add --force-update s3-charts s3://${{ env.S3_BUCKET }}/charts
-        helm repo update
+          # Add the S3 repository to Helm (this creates/updates repositories.yaml)
+          helm repo add --force-update ${{ env.S3_BUCKET }} s3://${{ env.S3_BUCKET }}/charts
+          helm repo update
 
-        # Push the chart to S3
-        helm s3 push "$CHART_FILE" s3://${{ env.S3_BUCKET }}/charts
+          # Push the chart to S3
+          helm s3 push "$CHART_FILE" ${{ env.S3_BUCKET }}
 
-    - name: Deploy to Kubernetes
-      run: |
-        # Configure kubectl
-        aws eks get-token --cluster-name eks-cluster | kubectl apply -f -
-        
-        # Add Helm S3 repository
-        helm repo add s3-charts s3://${{ env.S3_BUCKET }}/charts
-        helm repo update
-        
-        # Deploy the chart
-        helm upgrade --install ${{ env.HELM_CHART_NAME }} s3-charts/${{ env.HELM_CHART_NAME }} \
-          --set image.tag=${{ steps.version.outputs.VERSION }} \
-          --namespace default
+      - name: Deploy to Kubernetes
+        run: |
+          # Configure kubectl
+          aws eks get-token --cluster-name eks-cluster | kubectl apply -f -
+          
+          # Add Helm S3 repository
+          helm repo add ${{ env.S3_BUCKET }} s3://${{ env.S3_BUCKET }}/charts
+          helm repo update
+          
+          # Deploy the chart
+          helm upgrade --install ${{ env.HELM_CHART_NAME }} ${{ env.S3_BUCKET }}/${{ env.HELM_CHART_NAME }} \
+            --set image.tag=${{ steps.version.outputs.VERSION }} \
+            --namespace default
