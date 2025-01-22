@@ -619,4 +619,18 @@ This pipeline automates the build, package, and deployment process for the `lear
 *   **Packages & Uploads Helm Chart:** Updates the Helm chart with the new version and image tag, packages it, and uploads it to an S3 bucket used as a Helm repository.
 *   **Deploys to EKS:** Connects `kubectl` to the EKS cluster and deploys the Helm chart from S3 to the specified namespace (default: `default`).
 
+# CI/CD Problems
 
+I ran into an issue when running the pipeline at the "Deploy to Kubernetes" step. The newly created chart from the pipeline tried to deploy into the existing cluster but kept saying that the resources already existed.
+
+Upon further research, I found out that we would either need to add the helm chart labels to the existing objects in the cluster, recreate the cluster or do a force replace.
+
+I decided on just labeling the existing resources in the cluster with the helm labels with the below command:
+
+```bash
+kubectl label deployment _DEPLOYMENT_NAME \
+    app.kubernetes.io/managed-by=Helm \
+    helm.sh/chart=CHART_NAME \
+    app.kubernetes.io/instance=RELEASE_NAME \
+    -n NAMESPACE
+```
